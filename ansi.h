@@ -1,3 +1,11 @@
+/**deque.h configuration item
+ * #define USE_Unicode
+ * */
+
+/**The Usage
+ * #include "ansi.h"
+ * */
+
 /* ANSI颜色代码 */
 #define ANSI_RESET   "\033[0m"
 #define ANSI_GREEN   "\033[32m"
@@ -9,7 +17,7 @@
 #define SYMBOL_TICK  "✓"  /* ✓ UTF-8 */
 #define SYMBOL_CROSS "✗"  /* ✗ UTF-8 */
 
-#if USE_Unicode
+#ifdef USE_Unicode
 
 #define COLOR_y ANSI_GREEN SYMBOL_TICK  ANSI_RESET
 #define COLOR_n ANSI_RED   SYMBOL_CROSS ANSI_RESET

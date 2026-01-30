@@ -1,3 +1,15 @@
+/**The configuration item
+ * #define STB_fixed_8_16_32_TEST
+ * #define STB_fixed_8_16_32_TEST_MAIN
+ * #define ENABLE_Q8_8     1
+ * #define ENABLE_Q16_16   1
+ * #define ENABLE_Q32_32   1
+ * */
+
+/**The Usage
+ * #include "fixed_8_16_32.h"
+ * */
+
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>

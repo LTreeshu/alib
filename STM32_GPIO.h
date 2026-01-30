@@ -1,6 +1,10 @@
-/**The stb head file configuration item
+/**The configuration item
  * #define STM32_F1xx_GPIO
  * #define STM32_F4xx_GPIO
+ * */
+
+/**The Usage
+ * #include "STM32_GPIO.h"
  * */
 
 #ifndef __BIT_BAND_GPIO_H

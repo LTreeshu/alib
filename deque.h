@@ -6,7 +6,7 @@
  * #define DEQUE_FREE(ptr)          // 自定义内存释放
  * */
 
-/**The Useage
+/**The Usage
  * #define STB_deque
  * #include "deque.h"
  * */
