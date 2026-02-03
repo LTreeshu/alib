@@ -6,6 +6,9 @@
  * #include "ansi.h"
  * */
 
+#ifndef _ANSI_H_
+#define _ANSI_H_ 
+
 /* ANSI颜色代码 */
 #define ANSI_RESET   "\033[0m"
 #define ANSI_GREEN   "\033[32m"
@@ -33,4 +36,5 @@
 #define YorNC(y)  (y)? COLOR_y     : COLOR_n
 
 
+#endif
 
