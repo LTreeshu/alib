@@ -1,9 +1,9 @@
-/**deque.h configuration item
- * #define DEQUE_VALUE_TYPE int      // 默认int
- * #define DEQUE_INITIAL_CAPACITY 16 // 默认初始容量
- * #define DEQUE_ASSERT(x)          // 自定义断言
- * #define DEQUE_MALLOC(size)       // 自定义内存分配
- * #define DEQUE_FREE(ptr)          // 自定义内存释放
+/**The configuration item
+ * #define DEQUE_VALUE_TYPE int      // Default int
+ * #define DEQUE_INITIAL_CAPACITY 16 // Default initial capacity
+ * #define DEQUE_ASSERT(x)           // Custom assertion
+ * #define DEQUE_MALLOC(size)        // Custom memory allocation
+ * #define DEQUE_FREE(ptr)           // Custom memory release
  * */
 
 /**The Usage

@@ -8,9 +8,6 @@
  * #include "fixed.h"
  * */
 
-#ifndef _FIXED_H_
-#define _FIXED_H_ 
-
 #include <stdio.h>
 #include <stdint.h>
 #include <math.h>
@@ -142,7 +139,6 @@ static inline q_custom_t q_custom_div(q_custom_t a, q_custom_t b) {
 }
 #endif
 
-#endif /* _FIXED_H_  */
 
 #ifdef STB_fixed_TEST
 // ==================== 测试代码 ====================
@@ -233,6 +229,7 @@ void test_conversion(void) {
     }
 }
 
+
 // 精度测试
 void test_precision(void) {
 
@@ -278,6 +275,9 @@ void test_precision(void) {
     }
 }
 
+
+#ifdef STB_fixed
+#ifdef STBCFG_fixed_test
 // 算术运算测试
 void test_arithmetic(void) {
     printf("\n=== 算术运算测试 ===\n");
