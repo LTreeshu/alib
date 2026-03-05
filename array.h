@@ -19,6 +19,6 @@
  * Gets the size of array members of different types.
  * - array destination array.
 */
-#define _asizeof(array) (sizeof(array) / sizeof(array[0]))
+#define asizeof(array) (sizeof(array) / sizeof(array[0]))
 
 #endif
