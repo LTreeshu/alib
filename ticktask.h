@@ -16,13 +16,17 @@
 #ifndef _TASK_H_
 #define _TASK_H_
 #include <stdint.h>
-#include <ch32v00x.h>
+#include <stdio.h>
 
 #ifndef TSysTickCnt
 #error You must first define the SysTick count to use this component.
 #endif
 
-#ifndef TSystemCoreClock
+#ifndef TSysTickMAX
+#error You must first define the Max SysTick count to use this component.
+#endif
+
+#ifndef TUsCnt
 #error You must first define the SystemCoreClock value to use this component.
 #endif
 
@@ -33,6 +37,8 @@
 #ifndef TickTIMx_MAX
 #define TickTIMx_MAX 8
 #endif
+
+#define TWHEEL_TIME_STR_SIZE (21)
 
 #define __TaskInit(task, ticks, call)                            \
     task_t task = {.period = ticks, .compare = 0, .proc = call}; \
@@ -85,6 +91,12 @@ static twheel_t  twheel                  = {0U, 0U, 0U};
 static task_t    taskHead                = TASK_NULL;
 static twtimer_t timerHead               = TWTIM_NULL;
 static twtimer_t timerPool[TickTIMx_MAX] = {0};
+struct {
+    uint32_t free;
+    uint32_t used;
+    twtimer_t* pool[TickTIMx_MAX];
+    size_t capacity;
+} twtmgr = {.capacity = sizeof(twtmgr.pool) / sizeof(twtmgr.pool[0])};
 
 void TaskManager_Init (void);
 void TaskAdd (task_t *pt);
@@ -95,8 +107,11 @@ void TwtimerAdd(twheel_t tm, uint32_t cycle, callback_t cb);
 void TwtimerDelete(twtimer_t *twt);
 void TaskTwheelInit(void);
 void twheel_entry(void);
+uint8_t timerPoolalloc(twtimer_t **tw);
+void TDelay_Us(uint32_t n);
+void TDelay_Ms(uint32_t n);
 
-uint32_t Get_UsTicks (uint32_t n) { return n * p_ms; }
+uint32_t Get_UsTicks (uint32_t n) { return n * p_us; }
 
 uint32_t Get_MsTicks (uint32_t n) { return n * p_ms; }
 
@@ -104,8 +119,8 @@ uint32_t Get_sTicks (uint32_t n) { return n * p_ms * 1000U; }
 
 void TaskManager_Init (void)
 {
-    p_us = TSystemCoreClock / 8000000;
-    p_ms = (uint16_t)p_us * 1000;
+    p_us = TUsCnt;
+    p_ms = p_us * 1000;
     TSysTick_open();
     TaskTwheelInit();
 }
@@ -131,16 +146,16 @@ void TaskAdd (task_t *pt)
 
 void TaskDelete(task_t *pt)
 {
-    task_t *prev = NULL;
-    task_t *search = &taskHead;
-    while (search->next != pt)
+    if (pt == NULL) return;
+
+    task_t *prev = &taskHead;
+
+    while (prev->next != NULL && prev->next != pt)
     {
-        search = search->next;
+        prev = prev->next;
     }
 
-    prev = search;
-
-    if (prev == NULL) {return;}
+    if (prev->next == NULL) return;
 
     prev->next = pt->next;
     pt->next = NULL;
@@ -150,16 +165,20 @@ void TaskRun(void)
 {
     task_t *pt = taskHead.next;
 
+    register uint32_t syscnt;
+
     while (pt != NULL && pt->proc != NULL)
     {
+        syscnt = TSysTickCnt;
 
-        if (TSysTickCnt < pt->overflow) {
+        if (syscnt < pt->overflow) {
             pt->overflow = 0;
         }
 
-        if (pt->compare <= TSysTickCnt && pt->overflow == 0) {
+        if (pt->compare <= syscnt && pt->overflow == 0) {
             pt->proc();
-            uint32_t compare = TSysTickCnt + pt->period;
+            uint32_t compare = syscnt + pt->period;
+            compare %= TSysTickMAX;
 
             if (compare < pt->compare) {
                 pt->overflow = pt->compare;
@@ -175,26 +194,19 @@ void TaskRun(void)
 void TwtimerAdd(twheel_t tm, uint32_t cycle,  callback_t cb)
 {
     static uint32_t used = 0;
+    twtimer_t* node = NULL;
 
-    if (used > 9) {
-        uint8_t i = 9;
-        while (i--)
-        {
-            if (timerPool[i].period == 0) {
-                used = i;
-                break;
-            }
-        }
+    if (twtmgr.used == twtmgr.free) return;
 
-        if (i != used) return;
-    }
+    node = twtmgr.pool[twtmgr.used++];
+    twtmgr.used %= twtmgr.capacity;
 
-    twtimer_t* node = &timerPool[used];
+    if (node == NULL) return;
+
 
     /* 避免重复添加 */
-    if (timerHead.next == node) {
-        return;
-    }
+    if (timerHead.next == node) return;
+
 
     node->period = tm.value;
     node->callback = cb;
@@ -222,53 +234,78 @@ void TwtimerDelete(twtimer_t *twt)
     twt->next = NULL;
     twt->prev = NULL;
     *twt = (twtimer_t) {0, 0, 0, 0, 0, 0};
+
+    if ((twtmgr.free + 1) % twtmgr.capacity == twtmgr.used) {
+        return ;
+    }
+
+    twtmgr.pool[twtmgr.free++] = twt;
+    twtmgr.free %= twtmgr.capacity;
 }
 
 void TaskTwheelInit(void)
 {
 #ifdef USE_TimerWheel
     static task_t twheel_task = {.proc = twheel_entry};
+
+    // 初始化软定时器内存池
+    twtmgr.free = 0;
+    twtmgr.used = 0;
+    for (int i = 0; i < twtmgr.capacity; i++) {
+
+        twtmgr.pool[twtmgr.free] = &timerPool[i];
+
+        if ((twtmgr.free + 1) % twtmgr.capacity == twtmgr.used) break;
+        twtmgr.free = (twtmgr.free + 1) % twtmgr.capacity;
+    }
+
     TaskAdd(&twheel_task);
-    twheel_task.period = Get_sTicks(1);
+    twheel_task.period = Get_MsTicks(1);
     twheel_task.compare = twheel_task.period + TSysTickCnt;
 }
 
 /* period 937500 us*/
 void twheel_entry(void)
 {
-    twheel.s += 1;
-    if (twheel.s == 60) {
-        twheel.s = 0;
-        twheel.m += 1;
+    static uint32_t msCnt = 0U;
+
+    msCnt += 1U;
+    if (msCnt == 1000U) {
+        twheel.s += 1U;
+        msCnt = 0;
     }
 
-    if (twheel.m == 60) {
-        twheel.m = 0;
-        twheel.h += 1;
+    if (twheel.s == 60U) {
+        twheel.s = 0U;
+        twheel.m += 1U;
+    }
+
+    if (twheel.m == 60U) {
+        twheel.m = 0U;
+        twheel.h += 1U;
     }
 
     twtimer_t* ptt = &timerHead;
 
     while (ptt = ptt->next, ptt != NULL )
     {
-        ptt->overflow = (twheel.value < ptt->overflow) ? ptt->overflow : 0;
-        if (ptt->compare <= twheel.value && ptt->overflow == 0) {
+        ptt->overflow = (twheel.value < ptt->overflow) ? ptt->overflow : 0U;
+        if (ptt->compare <= twheel.value && ptt->overflow == 0U) {
             ptt->callback();
 
             uint32_t compare = twheel.value + ptt->period;
-            ptt->overflow = (compare < ptt->compare) ? ptt->compare : 0;
+            ptt->overflow = (compare < ptt->compare) ? ptt->compare : 0U;
             ptt->compare = compare;
 
-            if (ptt->cycle == 1) {
-                ptt->prev->next = ptt->next;
-                ptt->next->prev = ptt->prev;
+            if (ptt->cycle == 1U) {
+                TwtimerDelete(ptt);
                 /* clean */
                 *ptt = TWTIM_NULL;
             }
-            else if (ptt->cycle > 1) {
-                ptt->cycle -= 1;
+            else if ( ptt -> cycle == 0U) {;}
+            else {
+                ptt->cycle -= 1U;
             }
-
         }
     }
 }
@@ -340,14 +377,79 @@ char* uint2str(uint64_t value, char* buffer)
 
 const char* Get_twheelTimeStr(void)
 {
-    static char str[] = "xxxxxxxxxx:xx:xx";
-    
+    const char zero[TWHEEL_TIME_STR_SIZE] = {0};
+    static char str[TWHEEL_TIME_STR_SIZE] = {0};
+
+    typedef struct {char _[TWHEEL_TIME_STR_SIZE];}*pcopy;
+    *((pcopy)str) = *((pcopy)zero);
+
+    uint8_t index = 0;
+
     uint2str(twheel.h, str);
-    uint2str(twheel.m, &str[11]);
-    uint2str(twheel.s, &str[14]);
+    while (str[index] != '\0') index++;
+    str[index++] = ':';
+
+    uint2str(twheel.m, &str[index]);
+    while (str[index] != '\0') index++;
+    str[index++] = ':';
+
+    uint2str(twheel.s, &str[index]);
 
     return str;
 }
 
+/*********************************************************************
+ * @fn      TDelay_Us
+ *
+ * @brief   Microsecond Delay Time.
+ *
+ * @param   n - Microsecond number.
+ *
+ * @return  None
+ */
+void TDelay_Us(uint32_t n)
+{
+    uint32_t ticks = n * p_us;
+    uint32_t now = 0;
+    uint32_t elapsed = 0;
+    uint32_t start = TSysTickCnt;
+
+    do {
+        now = TSysTickCnt;
+        if (now > start) {
+            elapsed = now - start;
+        }
+        else {
+            elapsed = (TSysTickMAX - start) + now + 1;
+        }
+    } while (elapsed < ticks);
+}
+
+/*********************************************************************
+ * @fn      TDelay_Ms
+ *
+ * @brief   Millisecond Delay Time.
+ *
+ * @param   n - Millisecond number.
+ *
+ * @return  None
+ */
+void TDelay_Ms(uint32_t n)
+{
+    uint32_t ticks = n * p_ms;
+    uint32_t now = 0;
+    uint32_t elapsed = 0;
+    uint32_t start = TSysTickCnt;
+
+    do {
+        now = TSysTickCnt;
+        if (now > start) {
+            elapsed = now - start;
+        }
+        else {
+            elapsed = (TSysTickMAX - start) + now + 1;
+        }
+    } while (elapsed < ticks);
+}
 
 #endif /* _TASK_H_ */
