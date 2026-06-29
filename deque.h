@@ -11,8 +11,8 @@
  * #include "deque.h"
  * */
 
-#ifndef DEQUE_H
-#define DEQUE_H
+#ifndef _DEQUE_H_
+#define _DEQUE_H_
 
 #include <stddef.h>
 #include <stdbool.h>
@@ -72,7 +72,7 @@ bool deque_iterator_equal(deque_iterator a, deque_iterator b);
 void deque_iterator_next(deque_iterator* it);
 DEQUE_VALUE_TYPE deque_iterator_value(const deque_iterator* it);
 
-#endif // DEQUE_H
+#endif // _DEQUE_H_
 
 #ifdef STB_deque
 

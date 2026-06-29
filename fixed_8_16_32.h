@@ -9,6 +9,8 @@
 /**The Usage
  * #include "fixed_8_16_32.h"
  * */
+#ifndef _FIXED_8_16_32_H
+#define _FIXED_8_16_32_H
 
 #include <stdio.h>
 #include <stdint.h>
@@ -411,6 +413,8 @@ static inline q16_16_t q32_32_to_q16_16(q32_32_t q) {
     return (q16_16_t)((q + (1LL << (Q32_32_FRAC_BITS - Q16_16_FRAC_BITS - 1))) >> 
                       (Q32_32_FRAC_BITS - Q16_16_FRAC_BITS));
 }
+
+#endif /* _FIXED_8_16_32_H */
 
 
 #ifdef STB_fixed_8_16_32_TEST

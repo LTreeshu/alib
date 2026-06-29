@@ -7,6 +7,8 @@
  * #define STB_fixed
  * #include "fixed.h"
  * */
+#ifndef _FIXED_H_
+#define _FIXED_H_
 
 #include <stdio.h>
 #include <stdint.h>
@@ -15,11 +17,11 @@
 
 // 自定义定点数类型: Qm.n
 #ifndef CUSTOM_INT_BITS
-    #define CUSTOM_INT_BITS    15   // 整数位数 m
+#define CUSTOM_INT_BITS    15   // 整数位数 m
 #endif
 
 #ifndef CUSTOM_FRAC_BITS
-    #define CUSTOM_FRAC_BITS   16   // 小数位数 n
+#define CUSTOM_FRAC_BITS   16   // 小数位数 n
 #endif
 
 #define CUSTOM_TOTAL_BITS  (CUSTOM_INT_BITS + CUSTOM_FRAC_BITS)
@@ -69,6 +71,10 @@ typedef int64_t q_custom_t;
 #define Q_TO_INT(q, frac_bits) \
     ((q) >> (frac_bits))
 
+// 无符号整数转定点数
+#define UINT_TO_Q(i, frac_bits) \
+    ((q_custom_t)((unsigned int)(i) << (frac_bits)))
+
 // 定点数取小数部分
 #define Q_FRAC_PART(q, frac_bits) \
     ((q) & ((1 << (frac_bits)) - 1))
@@ -101,6 +107,9 @@ typedef int64_t q_custom_t;
 #define CUSTOM_INT_MASK   (((1ULL << CUSTOM_INT_BITS) - 1) << CUSTOM_FRAC_BITS)
 #define CUSTOM_FRAC_MASK  ((1ULL << CUSTOM_FRAC_BITS) - 1)
 
+#endif /* _FIXED_H_ */
+
+#ifdef IMPL_fixed
 // 自定义定点数函数
 static inline q_custom_t q_custom_from_float(float f) {
     return (q_custom_t)FLOAT_TO_Q(f, CUSTOM_FRAC_BITS, true);
@@ -124,6 +133,19 @@ static inline int q_custom_to_int(q_custom_t q) {
 
 static inline q_custom_t q_custom_frac_part(q_custom_t q) {
     return (q_custom_t)Q_FRAC_PART(q, CUSTOM_FRAC_BITS);
+}
+
+// 无符号整数转定点数
+static inline q_custom_t q_custom_from_uint(unsigned int i) {
+    return (q_custom_t)(i << CUSTOM_FRAC_BITS);
+}
+
+// 可选：带饱和的无符号整数转定点数
+static inline q_custom_t q_custom_from_uint_sat(unsigned int i) {
+    // 最大可表示的无符号整数值（因为定点数是有符号，正数部分最大值）
+    unsigned int max_uint = (1U << (CUSTOM_INT_BITS - 1)) - 1;
+    if (i > max_uint) i = max_uint;
+    return (q_custom_t)(i << CUSTOM_FRAC_BITS);
 }
 
 // 自定义定点数算术运算
@@ -275,9 +297,6 @@ void test_precision(void) {
     }
 }
 
-
-#ifdef STB_fixed
-#ifdef STBCFG_fixed_test
 // 算术运算测试
 void test_arithmetic(void) {
     printf("\n=== 算术运算测试 ===\n");
@@ -438,3 +457,4 @@ void run_all_tests(void) {
 
 #endif /* STB_fixed_TEST_MAIN */
 #endif /* STB_fixed_TEST */
+#endif /* IMPL_fixed */

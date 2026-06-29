@@ -12,8 +12,8 @@
  * 使用 static inline 函数和宏定义，确保在所有模式（Debug/Release）下均有效。
  */
 
-#ifndef NOP_H
-#define NOP_H
+#ifndef _NOP_H_
+#define _NOP_H_
 
 /* 
  * MSVC 编译器
@@ -83,4 +83,4 @@
  */
 #define CPU_NOP()  cpu_nop()
 
-#endif /* NOP_H */
+#endif /* _NOP_H_ */
