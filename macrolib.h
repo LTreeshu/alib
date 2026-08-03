@@ -3,6 +3,8 @@
 
 /*-----------------------------------------------------------------------------
 Public Macro */
+/* 公共宏 */
+
 #define BITS(type,raw,start,width) ((struct{type s:start;type _bits:width;}*)&raw)->_bits
 #define SETBITS(type,raw,start,width,value) do{((struct{type s:start;type _bits:width;}*)&raw)->_bits = value;}while(0)
 #define SETBit(n) /*|=*/(0x1<<n)
@@ -98,11 +100,7 @@ void fn_1name(fn_p this)
 */
 
 #define arrydef_(type,size) typedef struct{type data[size];}*arry##p
-// size 支持任意立即数字和 sizeof 语句
+// size 支持任意立即数字和 sizeof 语句  // size supports any immediate number and sizeof expression
 #define arrycopy(type,size,a1,a2) do{arrydef_(type,size); (*(arry##p)a1) = (*(arry##p)a2);}while(0)
 
 #endif
-
-
-
-

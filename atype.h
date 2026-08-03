@@ -1,7 +1,9 @@
 /**The configuration item
+ **配置项
  * 
  * */
 /**The Usage
+ **用法
  * #include "atype.h"
  * */
 

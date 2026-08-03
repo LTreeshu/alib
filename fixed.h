@@ -1,9 +1,11 @@
 /**The configuration item
- * #define CUSTOM_INT_BITS    15   // 整数位数 m
- * #define CUSTOM_FRAC_BITS   16   // 小数位数 n
+ * 配置项
+ * #define CUSTOM_INT_BITS    15   // 整数位数 m  // integer bits m
+ * #define CUSTOM_FRAC_BITS   16   // 小数位数 n  // fraction bits n
  * */
 
 /**The Usage
+ * 使用方法
  * #define STB_fixed
  * #include "fixed.h"
  * */
@@ -15,18 +17,18 @@
 #include <math.h>
 #include <stdbool.h>
 
-// 自定义定点数类型: Qm.n
+// 自定义定点数类型: Qm.n  // Custom fixed-point type: Qm.n
 #ifndef CUSTOM_INT_BITS
-#define CUSTOM_INT_BITS    15   // 整数位数 m
+#define CUSTOM_INT_BITS    15   // 整数位数 m  // integer bits m
 #endif
 
 #ifndef CUSTOM_FRAC_BITS
-#define CUSTOM_FRAC_BITS   16   // 小数位数 n
+#define CUSTOM_FRAC_BITS   16   // 小数位数 n  // fraction bits n
 #endif
 
 #define CUSTOM_TOTAL_BITS  (CUSTOM_INT_BITS + CUSTOM_FRAC_BITS)
 
-// 选择合适的基础类型
+// 选择合适的基础类型  // Select appropriate base type
 #if CUSTOM_TOTAL_BITS <= 8
 typedef int8_t q_custom_t;
 #elif CUSTOM_TOTAL_BITS <= 16
@@ -37,80 +39,80 @@ typedef int32_t q_custom_t;
 typedef int64_t q_custom_t;
 #endif
 
-// ==================== 通用宏 ====================
-// 计算缩放因子
+// ==================== 通用宏 ====================  // ==================== General Macros ====================
+// 计算缩放因子  // Calculate scaling factor
 #define Q_SCALE(frac_bits)        ((1U) << (frac_bits))
 
-// 计算最大值（有符号，考虑一位符号位）
+// 计算最大值（有符号，考虑一位符号位）  // Calculate maximum value (signed, considering sign bit)
 #define Q_MAX_VALUE(int_bits, frac_bits) \
     ((1LL << ((int_bits) + (frac_bits) - 1)) - 1)
 
-// 计算最小值（有符号，考虑一位符号位）
+// 计算最小值（有符号，考虑一位符号位）  // Calculate minimum value (signed, considering sign bit)
 #define Q_MIN_VALUE(int_bits, frac_bits) \
     (-(1LL << ((int_bits) + (frac_bits) - 1)))
 
-// 浮点数转定点数（四舍五入）
+// 浮点数转定点数（四舍五入）  // Float to fixed-point (rounding)
 #define FLOAT_TO_Q(f, frac_bits, round) \
     ((f) >= 0 ? \
      ((f) * (1 << (frac_bits)) + (round ? 0.5f : 0.0f)) : \
      ((f) * (1 << (frac_bits)) - (round ? 0.5f : 0.0f)))
 
-// 浮点数转定点数（无符号，四舍五入）
+// 浮点数转定点数（无符号，四舍五入）  // Float to fixed-point (unsigned, rounding)
 #define UFLOAT_TO_Q(f, frac_bits, round) \
     ((f) * (1 << (frac_bits)) + (round ? 0.5f : 0.0f))
 
-// 定点数转浮点数
+// 定点数转浮点数  // Fixed-point to float
 #define Q_TO_FLOAT(q, frac_bits) \
     ((float)(q) / (1 << (frac_bits)))
 
-// 整数转定点数
+// 整数转定点数  // Integer to fixed-point
 #define INT_TO_Q(i, frac_bits) \
     ((i) << (frac_bits))
 
-// 定点数取整数部分
+// 定点数取整数部分  // Extract integer part from fixed-point
 #define Q_TO_INT(q, frac_bits) \
     ((q) >> (frac_bits))
 
-// 无符号整数转定点数
+// 无符号整数转定点数  // Unsigned integer to fixed-point
 #define UINT_TO_Q(i, frac_bits) \
     ((q_custom_t)((unsigned int)(i) << (frac_bits)))
 
-// 定点数取小数部分
+// 定点数取小数部分  // Extract fractional part from fixed-point
 #define Q_FRAC_PART(q, frac_bits) \
     ((q) & ((1 << (frac_bits)) - 1))
 
-// 定点数乘法（四舍五入）
+// 定点数乘法（四舍五入）  // Fixed-point multiplication (rounding)
 #define Q_MUL(a, b, frac_bits) \
     ((int)(((int64_t)(a) * (b) + (1 << ((frac_bits) - 1))) >> (frac_bits)))
 
-// 定点数除法（四舍五入）
+// 定点数除法（四舍五入）  // Fixed-point division (rounding)
 #define Q_DIV(a, b, frac_bits) \
     ((int)(((int64_t)(a) << (frac_bits)) / (b)))
 
-// 定点数格式转换（四舍五入）
+// 定点数格式转换（四舍五入）  // Fixed-point format conversion (rounding)
 #define Q_CONVERT(q, from_frac, to_frac) \
     ((from_frac) >= (to_frac) ? \
      ((q) + (1 << ((from_frac) - (to_frac) - 1))) >> ((from_frac) - (to_frac)) : \
      (q) << ((to_frac) - (from_frac)))
 
 
-// ==================== 自定义 Qm.n 定点数 ====================
+// ==================== 自定义 Qm.n 定点数 ====================  // ==================== Custom Qm.n fixed-point ====================
 #if USE_CUSTOM_Q
-// 自定义定点数常量
+// 自定义定点数常量  // Custom fixed-point constants
 #define CUSTOM_SCALE      (1U << CUSTOM_FRAC_BITS)
 #define CUSTOM_MAX        ((1LL << (CUSTOM_INT_BITS + CUSTOM_FRAC_BITS - 1)) - 1)
 #define CUSTOM_MIN        (-(1LL << (CUSTOM_INT_BITS + CUSTOM_FRAC_BITS - 1)))
 #define CUSTOM_MAX_FLOAT  ((float)CUSTOM_MAX / CUSTOM_SCALE)
 #define CUSTOM_MIN_FLOAT  ((float)CUSTOM_MIN / CUSTOM_SCALE)
 
-// 自定义定点数掩码
+// 自定义定点数掩码  // Custom fixed-point masks
 #define CUSTOM_INT_MASK   (((1ULL << CUSTOM_INT_BITS) - 1) << CUSTOM_FRAC_BITS)
 #define CUSTOM_FRAC_MASK  ((1ULL << CUSTOM_FRAC_BITS) - 1)
 
 #endif /* _FIXED_H_ */
 
 #ifdef IMPL_fixed
-// 自定义定点数函数
+// 自定义定点数函数  // Custom fixed-point functions
 static inline q_custom_t q_custom_from_float(float f) {
     return (q_custom_t)FLOAT_TO_Q(f, CUSTOM_FRAC_BITS, true);
 }
@@ -135,20 +137,20 @@ static inline q_custom_t q_custom_frac_part(q_custom_t q) {
     return (q_custom_t)Q_FRAC_PART(q, CUSTOM_FRAC_BITS);
 }
 
-// 无符号整数转定点数
+// 无符号整数转定点数  // Unsigned integer to fixed-point
 static inline q_custom_t q_custom_from_uint(unsigned int i) {
     return (q_custom_t)(i << CUSTOM_FRAC_BITS);
 }
 
-// 可选：带饱和的无符号整数转定点数
+// 可选：带饱和的无符号整数转定点数  // Optional: unsigned integer to fixed-point with saturation
 static inline q_custom_t q_custom_from_uint_sat(unsigned int i) {
-    // 最大可表示的无符号整数值（因为定点数是有符号，正数部分最大值）
+    // 最大可表示的无符号整数值（因为定点数是有符号，正数部分最大值）  // Maximum representable unsigned integer (since fixed-point is signed)
     unsigned int max_uint = (1U << (CUSTOM_INT_BITS - 1)) - 1;
     if (i > max_uint) i = max_uint;
     return (q_custom_t)(i << CUSTOM_FRAC_BITS);
 }
 
-// 自定义定点数算术运算
+// 自定义定点数算术运算  // Custom fixed-point arithmetic operations
 static inline q_custom_t q_custom_add(q_custom_t a, q_custom_t b) { return a + b; }
 static inline q_custom_t q_custom_sub(q_custom_t a, q_custom_t b) { return a - b; }
 
@@ -163,9 +165,9 @@ static inline q_custom_t q_custom_div(q_custom_t a, q_custom_t b) {
 
 
 #ifdef STB_fixed_TEST
-// ==================== 测试代码 ====================
+// ==================== 测试代码 ====================  // ==================== Test Code ====================
 
-// 打印配置信息
+// 打印配置信息  // Print configuration info
 void test_configuration(void) {
     printf("\n=== 自定义定点数配置信息测试 ===\n");
     printf("整数位数 (m): %d bits\n", CUSTOM_INT_BITS);
@@ -185,7 +187,7 @@ void test_configuration(void) {
     printf("整数位掩码: 0x%llX\n", (unsigned long long)CUSTOM_INT_MASK);
     printf("小数位掩码: 0x%llX\n", (unsigned long long)CUSTOM_FRAC_MASK);
 
-    // 测试范围
+    // 测试范围  // Test range
     printf("\n数值范围测试:\n");
     float test_float = 123.456f;
     q_custom_t test_q = q_custom_from_float(test_float);
@@ -194,7 +196,7 @@ void test_configuration(void) {
     printf("定点数 %d -> 浮点数: %f\n",
            test_q, q_custom_to_float(test_q));
 
-    // 测试整数和小数部分
+    // 测试整数和小数部分  // Test integer and fractional parts
     int int_part = q_custom_to_int(test_q);
     q_custom_t frac_part = q_custom_frac_part(test_q);
     printf("整数部分: %d (0x%X)\n", int_part, int_part);
@@ -202,11 +204,11 @@ void test_configuration(void) {
            frac_part, frac_part, (float)frac_part / CUSTOM_SCALE);
 }
 
-// 转换测试
+// 转换测试  // Conversion test
 void test_conversion(void) {
     printf("\n=== 转换精度测试 ===\n");
 
-    // 浮点数到定点数转换测试
+    // 浮点数到定点数转换测试  // Float to fixed-point conversion test
     float test_values[] = {0.0f, 0.5f, 1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f, 4.5f, 5.0f};
     int num_tests = sizeof(test_values) / sizeof(test_values[0]);
 
@@ -223,7 +225,7 @@ void test_conversion(void) {
                test_values[i], (unsigned int)q_val, q_val, recovered, error);
     }
 
-    // 截断模式测试
+    // 截断模式测试  // Truncation mode test
     printf("\n浮点数 -> 定点数 (截断) 转换测试:\n");
     printf("%-10s %-15s %-10s %-10s %-10s\n",
            "浮点数", "定点数(十六)", "定点数(十)", "转回浮点", "误差");
@@ -237,7 +239,7 @@ void test_conversion(void) {
                test_values[i], (unsigned int)q_val, q_val, recovered, error);
     }
 
-    // 整数转换测试
+    // 整数转换测试  // Integer conversion test
     printf("\n整数 -> 定点数转换测试:\n");
     int int_test[] = {0, 1, 2, 5, 10, 100, -1, -2, -5, -10, -100};
     int num_int_tests = sizeof(int_test) / sizeof(int_test[0]);
@@ -252,23 +254,23 @@ void test_conversion(void) {
 }
 
 
-// 精度测试
+// 精度测试  // Precision test
 void test_precision(void) {
 
     printf("\n=== 精度与误差测试 ===\n");
     printf("\33[32m""\n=== 精度与误差测试 ===\n""\33[0m");
 
-    // 测试分辨率
+    // 测试分辨率  // Test resolution
     printf("分辨率测试:\n");
     printf("缩放因子: %u\n", CUSTOM_SCALE);
     printf("理论最小步长: %f\n", 1.0f / CUSTOM_SCALE);
     printf("实际最小可表示浮点值: %.10f\n", 1.0f / CUSTOM_SCALE);
 
-    // 测试可表示的最大小数精度
+    // 测试可表示的最大小数精度  // Test maximum representable fractional precision
     float max_fraction = 1.0f - 1.0f / CUSTOM_SCALE;
     printf("最大小数部分: %.4f (1 - 1/%d)\n", max_fraction, CUSTOM_SCALE);
 
-    // 测试边界条件
+    // 测试边界条件  // Test boundary conditions
     printf("\n边界条件测试:\n");
     float boundary_values[] = {
         0.0f,
@@ -297,11 +299,11 @@ void test_precision(void) {
     }
 }
 
-// 算术运算测试
+// 算术运算测试  // Arithmetic operations test
 void test_arithmetic(void) {
     printf("\n=== 算术运算测试 ===\n");
 
-    // 加减法测试
+    // 加减法测试  // Addition/Subtraction test
     printf("\n1. 加法测试:\n");
     float a_f = 3.5f, b_f = 2.25f;
     q_custom_t a_q = q_custom_from_float(a_f);
@@ -374,7 +376,7 @@ void test_arithmetic(void) {
     printf("定点结果: 0x%X -> %.4f\n", (unsigned int)result_q, result_q_f);
     printf("误差: %.6f\n", fabsf(result_f - result_q_f));
 
-    // 溢出测试
+    // 溢出测试  // Overflow test
     printf("\n6. 溢出测试:\n");
     float large1 = 100.0f;
     float large2 = 30.0f;
@@ -390,11 +392,11 @@ void test_arithmetic(void) {
     printf("是否溢出: %s\n", fabsf(expected_mul_large - mul_large_f) > 1.0f ? "可能" : "否");
 }
 
-// 格式转换测试
+// 格式转换测试  // Format conversion test
 void test_format_conversion(void) {
     printf("\n=== 格式转换测试 ===\n");
 
-    // 从不同精度转换
+    // 从不同精度转换  // Convert from different precisions
     printf("1. 从 Q4.4 转换到 Q12.4:\n");
     int q4_4 = 0x53;  // 5.1875 in Q4.4
     q_custom_t converted_q = Q_CONVERT(q4_4, 4, CUSTOM_FRAC_BITS);
@@ -412,19 +414,19 @@ void test_format_conversion(void) {
            (unsigned int)converted_q, q_custom_to_float(converted_q));
 }
 
-// 性能测试
+// 性能测试  // Performance test
 void test_performance(void) {
     printf("\n=== 性能基准测试 ===\n");
 
     const int NUM_ITERATIONS = 10000;
 
-    // 浮点运算基准
+    // 浮点运算基准  // Floating-point benchmark
     float float_result = 1.0f;
     float float_ops[NUM_ITERATIONS];
 
     printf("浮点运算测试 (%d 次迭代):\n", NUM_ITERATIONS);
 
-    // 定点运算基准
+    // 定点运算基准  // Fixed-point benchmark
     q_custom_t q_result = q_custom_from_float(1.0f);
     q_custom_t q_ops[NUM_ITERATIONS];
 
@@ -435,7 +437,7 @@ void test_performance(void) {
 }
 
 #ifdef STB_fixed_TEST_MAIN
-// 主测试函数
+// 主测试函数  // Main test function
 void run_all_tests(void) {
     printf("========================================\n");
     printf("    自定义定点数库测试套件\n");

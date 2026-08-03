@@ -4,25 +4,52 @@
  * #define STB_ANSI_FORCE_ENABLE   - Enforce ANSI
  * #define STB_ANSI_FORCE_DISABLE  - Force ANSI to be disabled
  * */
+/* 配置项
+ * #define STB_ANSI_USE_UNICODE
+ * #define STB_ANSI_NO_AUTO_DETECT - 禁用自动检测
+ * #define STB_ANSI_FORCE_ENABLE   - 强制启用ANSI
+ * #define STB_ANSI_FORCE_DISABLE  - 强制禁用ANSI
+ * */
 
 /**The Usage
  * #define STB_ansi
  * #include "ansi.h"
  * */
+/* 使用方法
+ * #define STB_ansi
+ * #include "ansi.h"
+ * */
 
 /*
- * ansi.h - ANSI转义序列修饰符库
- * 版本: 1.0
- * 
- * 用法:
- *   1. 在单个C文件中定义 STB_ansi
- *   2. 包含此头文件
- * 
- * 示例:
+* ansi.h-ANSI escape sequence modifier library
+* Version: 1.0
+*
+* usage:
+* 1. define STB_ansi in a single c file.
+* 2. Include this header file.
+*
+* Example:
  *   #define STB_ansi
  *   #include "stb_ansi_modifier.h"
  * 
- * 注意: 默认自动检测ANSI支持，可通过宏控制
+ * Note: ANSI support is automatically detected by default, which can be controlled by macro.
+ *   STB_ANSI_NO_AUTO_DETECT - Disable automatic detection
+ *   STB_ANSI_FORCE_ENABLE   - Enforce ANSI
+ *   STB_ANSI_FORCE_DISABLE  - Force ANSI to be disabled
+ */
+/*
+* ansi.h - ANSI转义序列修饰库
+* 版本: 1.0
+*
+* 使用方法:
+* 1. 在单个C文件中定义 STB_ansi。
+* 2. 包含此头文件。
+*
+* 示例:
+ *   #define STB_ansi
+ *   #include "stb_ansi_modifier.h"
+ * 
+ * 注意: 默认自动检测ANSI支持，可通过宏控制。
  *   STB_ANSI_NO_AUTO_DETECT - 禁用自动检测
  *   STB_ANSI_FORCE_ENABLE   - 强制启用ANSI
  *   STB_ANSI_FORCE_DISABLE  - 强制禁用ANSI
@@ -35,31 +62,39 @@
 extern "C" {
 #endif
 
+/* ============================ basic interface ============================ */
 /* ============================ 基本接口 ============================ */
 
+/* Initialize ANSI support detection */
 /* 初始化ANSI支持检测 */
 void stb_ansi_init(int force_enable);
 
+/* Get the current ANSI support status */
 /* 获取当前ANSI支持状态 */
 int stb_ansi_enabled(void);
 
-/* 启用/禁用ANSI输出 (不改变全局状态) */
+/* Enable/disable ANSI output (without changing the global state) */
+/* 启用/禁用ANSI输出（不改变全局状态） */
 void stb_ansi_set_enabled(int enabled);
 
+/* Reset all styles and colors */
 /* 重置所有样式和颜色 */
 #define ANSI_RESET "\033[0m"
 
+/* ============================ Text style ============================ */
 /* ============================ 文本样式 ============================ */
 
-/* 字体样式 */
-#define ANSI_BOLD      "\033[1m"      /* 加粗 */
-#define ANSI_DIM       "\033[2m"      /* 暗淡 */
-#define ANSI_ITALIC    "\033[3m"      /* 斜体 */
-#define ANSI_UNDERLINE "\033[4m"      /* 下划线 */
-#define ANSI_BLINK     "\033[5m"      /* 闪烁 */
-#define ANSI_REVERSE   "\033[7m"      /* 反色 */
-#define ANSI_HIDDEN    "\033[8m"      /* 隐藏 */
+/* Font style */
+/* 字体风格 */
+#define ANSI_BOLD      "\033[1m"      /* overstriking - 加粗 */
+#define ANSI_DIM       "\033[2m"      /* bleak - 暗淡 */
+#define ANSI_ITALIC    "\033[3m"      /* italic type - 斜体 */
+#define ANSI_UNDERLINE "\033[4m"      /* underline - 下划线 */
+#define ANSI_BLINK     "\033[5m"      /* glimmer - 闪烁 */
+#define ANSI_REVERSE   "\033[7m"      /* inverse - 反色 */
+#define ANSI_HIDDEN    "\033[8m"      /* hide - 隐藏 */
 
+/* Reset a specific style */
 /* 重置特定样式 */
 #define ANSI_NO_BOLD      "\033[22m"
 #define ANSI_NO_DIM       "\033[22m"
@@ -69,9 +104,11 @@ void stb_ansi_set_enabled(int enabled);
 #define ANSI_NO_REVERSE   "\033[27m"
 #define ANSI_NO_HIDDEN    "\033[28m"
 
-/* ============================ 前景色 (8/16色) ============================ */
+/* ============================ Foreground (8/16 colors) ============================ */
+/* ============================ 前景色（8/16色） ============================ */
 
-/* 标准颜色 */
+/* Standard color */
+/* 标准色 */
 #define ANSI_FG_BLACK   "\033[30m"
 #define ANSI_FG_RED     "\033[31m"
 #define ANSI_FG_GREEN   "\033[32m"
@@ -81,6 +118,7 @@ void stb_ansi_set_enabled(int enabled);
 #define ANSI_FG_CYAN    "\033[36m"
 #define ANSI_FG_WHITE   "\033[37m"
 
+/* bright colour */
 /* 亮色 */
 #define ANSI_FG_BLACK_BRIGHT   "\033[90m"
 #define ANSI_FG_RED_BRIGHT     "\033[91m"
@@ -91,11 +129,14 @@ void stb_ansi_set_enabled(int enabled);
 #define ANSI_FG_CYAN_BRIGHT    "\033[96m"
 #define ANSI_FG_WHITE_BRIGHT   "\033[97m"
 
+/* Reset foreground color */
 /* 重置前景色 */
 #define ANSI_FG_DEFAULT "\033[39m"
 
-/* ============================ 背景色 (8/16色) ============================ */
+/* ============================ Background color (8/16 color) ============================ */
+/* ============================ 背景色（8/16色） ============================ */
 
+/* Standard background color */
 /* 标准背景色 */
 #define ANSI_BG_BLACK   "\033[40m"
 #define ANSI_BG_RED     "\033[41m"
@@ -106,6 +147,7 @@ void stb_ansi_set_enabled(int enabled);
 #define ANSI_BG_CYAN    "\033[46m"
 #define ANSI_BG_WHITE   "\033[47m"
 
+/* Bright background color */
 /* 亮背景色 */
 #define ANSI_BG_BLACK_BRIGHT   "\033[100m"
 #define ANSI_BG_RED_BRIGHT     "\033[101m"
@@ -116,62 +158,80 @@ void stb_ansi_set_enabled(int enabled);
 #define ANSI_BG_CYAN_BRIGHT    "\033[106m"
 #define ANSI_BG_WHITE_BRIGHT   "\033[107m"
 
+/* Reset background color */
 /* 重置背景色 */
 #define ANSI_BG_DEFAULT "\033[49m"
 
+/* ============================ 256 color mode ============================ */
 /* ============================ 256色模式 ============================ */
 
+/* Foreground 256 colors: \033[38;5;{n}m */
 /* 前景256色: \033[38;5;{n}m */
 #define ANSI_FG_256(n) "\033[38;5;" #n "m"
 
+/* Background 256 colors: \033[48;5;{n}m */
 /* 背景256色: \033[48;5;{n}m */
 #define ANSI_BG_256(n) "\033[48;5;" #n "m"
 
+/* ============================ True color mode ============================ */
 /* ============================ 真彩色模式 ============================ */
 
-/* RGB颜色: \033[38;2;{r};{g};{b}m */
+/* RGB color: \033[38;2;{r};{g};{b}m */
+/* RGB前景色: \033[38;2;{r};{g};{b}m */
 #define ANSI_FG_RGB(r,g,b) "\033[38;2;" #r ";" #g ";" #b "m"
 
-/* RGB背景: \033[48;2;{r};{g};{b}m */
+/* RGB background: \033[48;2;{r};{g};{b}m */
+/* RGB背景色: \033[48;2;{r};{g};{b}m */
 #define ANSI_BG_RGB(r,g,b) "\033[48;2;" #r ";" #g ";" #b "m"
 
+/* ============================ cursor control ============================ */
 /* ============================ 光标控制 ============================ */
 
+/* cursor movement */
 /* 光标移动 */
 #define ANSI_CURSOR_UP(n)        "\033[" #n "A"
 #define ANSI_CURSOR_DOWN(n)      "\033[" #n "B"
 #define ANSI_CURSOR_RIGHT(n)     "\033[" #n "C"
 #define ANSI_CURSOR_LEFT(n)      "\033[" #n "D"
 
+/* Cursor positioning */
 /* 光标定位 */
 #define ANSI_CURSOR_POS(row,col) "\033[" #row ";" #col "H"
 #define ANSI_CURSOR_HOME         "\033[H"
 
+/* Cursor visibility */
 /* 光标可见性 */
 #define ANSI_CURSOR_SHOW         "\033[?25h"
 #define ANSI_CURSOR_HIDE         "\033[?25l"
 
+/* Save/restore cursor position */
 /* 保存/恢复光标位置 */
 #define ANSI_CURSOR_SAVE         "\033[s"
 #define ANSI_CURSOR_RESTORE      "\033[u"
 
+/* ============================ Screen control ============================ */
 /* ============================ 屏幕控制 ============================ */
 
+/* cls */
 /* 清屏 */
 #define ANSI_CLEAR_SCREEN        "\033[2J"
 #define ANSI_CLEAR_TO_END        "\033[0J"
 #define ANSI_CLEAR_TO_START      "\033[1J"
 
+/* Kiyoshi */
 /* 清行 */
 #define ANSI_CLEAR_LINE          "\033[2K"
 #define ANSI_CLEAR_TO_EOL        "\033[0K"
 #define ANSI_CLEAR_TO_SOL        "\033[1K"
 
+/* roll */
 /* 滚动 */
 #define ANSI_SCROLL_UP(n)        "\033[" #n "S"
 #define ANSI_SCROLL_DOWN(n)      "\033[" #n "T"
 
-/* ============================ 二值结果打印 ============================ */
+/* ============================ Binary result printing ============================ */
+/* ============================ 布尔结果打印 ============================ */
+/* Unicode symbols (cross-platform compatibility) */
 /* Unicode符号（跨平台兼容） */
 #define SYMBOL_TICK  "✓"  /* ✓ UTF-8 */
 #define SYMBOL_CROSS "✗"  /* ✗ UTF-8 */
@@ -191,14 +251,17 @@ void stb_ansi_set_enabled(int enabled);
 #define YorN(y)   (y)? SYMBOL_TICK : SYMBOL_CROSS
 #define YorNC(y)  (y)? COLOR_y     : COLOR_n
 
-/* ============================ 高级功能 ============================ */
+/* ============================ high function ============================ */
+/* ============================ 高级函数 ============================ */
 
-/* 函数接口 - 返回带ANSI修饰的文本（需手动free） */
+/* Function interface-returns text decorated with ANSI (manual free required) */
+/* 函数接口 - 返回带有ANSI修饰的文本（需要手动释放） */
 char* stb_ansi_colorize(const char* text, const char* ansi_code);
 char* stb_ansi_colorize_fg(const char* text, int r, int g, int b);
 char* stb_ansi_colorize_bg(const char* text, int r, int g, int b);
 
-/* 预设主题样式 */
+/* Default theme style */
+/* 默认主题样式 */
 const char* stb_ansi_success(const char* text);
 const char* stb_ansi_error(const char* text);
 const char* stb_ansi_warning(const char* text);
@@ -206,23 +269,27 @@ const char* stb_ansi_info(const char* text);
 const char* stb_ansi_highlight(const char* text);
 const char* stb_ansi_quote(const char* text);
 
+/* Print function (automatically handle ANSI status) */
 /* 打印函数（自动处理ANSI状态） */
 void stb_ansi_printf(const char* format, ...);
 void stb_ansi_puts(const char* str);
 void stb_ansi_print(const char* str);
 void stb_ansi_println(const char* str);
 
+/* Progress bar and status */
 /* 进度条和状态 */
 void stb_ansi_progress_bar(int progress, int total, int width);
 void stb_ansi_spinner(const char* label, int frame);
 void stb_ansi_print_status(const char* message, int type);
 
+/* Formatting tool */
 /* 格式化工具 */
 void stb_ansi_print_table(const char** headers, const char*** rows, 
                          int num_headers, int num_rows, int* col_widths);
 void stb_ansi_print_boxed(const char* text, const char* style);
 void stb_ansi_print_separator(int length, char ch, const char* color);
 
+/* Cache management */
 /* 缓存管理 */
 void stb_ansi_push_state(void);
 void stb_ansi_pop_state(void);
@@ -235,6 +302,7 @@ void stb_ansi_clear_cache(void);
 #endif /* STB_ANSI_MODIFIER_INCLUDED */
 
 /* ================================================================= */
+/* Implementation part */
 /* 实现部分 */
 #ifdef STB_ansi
 #undef STB_ansi
@@ -255,20 +323,24 @@ void stb_ansi_clear_cache(void);
 #endif
 #endif
 
+/* Internal state */
 /* 内部状态 */
 static int stb_ansi_global_enabled = 0;
 static int stb_ansi_initialized = 0;
-static int stb_ansi_local_enabled = 1; /* 线程局部模拟 */
+static int stb_ansi_local_enabled = 1; /* Thread local simulation - 线程局部模拟 */
 
+/* Internal buffer */
 /* 内部缓冲区 */
 #define STB_ANSI_BUFFER_SIZE 4096
 static char stb_ansi_buffer[STB_ANSI_BUFFER_SIZE];
 
+/* State stack */
 /* 状态栈 */
 #define STB_ANSI_STACK_SIZE 10
 static int stb_ansi_state_stack[STB_ANSI_STACK_SIZE];
 static int stb_ansi_stack_top = 0;
 
+/* Initialize ANSI support detection */
 /* 初始化ANSI支持检测 */
 void stb_ansi_init(int force_enable)
 {
@@ -280,17 +352,20 @@ void stb_ansi_init(int force_enable)
     stb_ansi_global_enabled = 0;
 #else
 #ifndef STB_ANSI_NO_AUTO_DETECT
+    /* automatic detection */
     /* 自动检测 */
     int is_tty = 0;
     
 #ifdef _WIN32
+    /* Windows detection */
     /* Windows检测 */
     HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
     DWORD mode = 0;
     is_tty = (GetConsoleMode(hConsole, &mode) != 0);
     
     if (is_tty) {
-        /* Windows 10 Build 14393+ 支持ANSI */
+        /* Windows 10 Build 14393+ supports ANSI. */
+        /* Windows 10 Build 14393+ 支持ANSI。 */
         OSVERSIONINFOEX osvi = {0};
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
         osvi.dwBuildNumber = 14393;
@@ -303,10 +378,12 @@ void stb_ansi_init(int force_enable)
         stb_ansi_global_enabled = force_enable;
     }
 #else
-    /* Unix-like系统检测 */
+    /* Unix-like system detection */
+    /* Unix类系统检测 */
     is_tty = isatty(fileno(stdout));
     
     if (is_tty) {
+        /* Check the terminal type */
         /* 检查终端类型 */
         const char* term = getenv("TERM");
         const char* colorterm = getenv("COLORTERM");
@@ -321,7 +398,8 @@ void stb_ansi_init(int force_enable)
             strcmp(term, "tmux") == 0
         )) || (colorterm != NULL);
         
-        /* 检查NO_COLOR环境变量 */
+        /* Check the NO_COLOR environment variable.*/
+        /* 检查 NO_COLOR 环境变量。 */
         if (getenv("NO_COLOR") != NULL) {
             stb_ansi_global_enabled = 0;
         }
@@ -338,6 +416,7 @@ void stb_ansi_init(int force_enable)
     stb_ansi_local_enabled = stb_ansi_global_enabled;
 }
 
+/* Get ANSI support status*/
 /* 获取ANSI支持状态 */
 int stb_ansi_enabled(void)
 {
@@ -347,13 +426,15 @@ int stb_ansi_enabled(void)
     return stb_ansi_global_enabled && stb_ansi_local_enabled;
 }
 
-/* 启用/禁用ANSI输出 */
+/* Enable/disable ANSI output. */
+/* 启用/禁用ANSI输出。 */
 void stb_ansi_set_enabled(int enabled)
 {
     stb_ansi_local_enabled = enabled;
 }
 
-/* 应用ANSI代码到文本 */
+/* Apply ANSI code to text */
+/* 对文本应用ANSI代码 */
 static const char* apply_ansi(const char* ansi_code)
 {
     if (stb_ansi_enabled()) {
@@ -362,7 +443,8 @@ static const char* apply_ansi(const char* ansi_code)
     return "";
 }
 
-/* 颜色化文本 */
+/* Colorized text */
+/* 着色文本 */
 char* stb_ansi_colorize(const char* text, const char* ansi_code)
 {
     if (!text) return NULL;
@@ -390,7 +472,8 @@ char* stb_ansi_colorize(const char* text, const char* ansi_code)
     return result;
 }
 
-/* RGB颜色化前景 */
+/* RGB colorization foreground */
+/* RGB着色前景 */
 char* stb_ansi_colorize_fg(const char* text, int r, int g, int b)
 {
     if (!stb_ansi_enabled()) {
@@ -403,7 +486,8 @@ char* stb_ansi_colorize_fg(const char* text, int r, int g, int b)
     return stb_ansi_colorize(text, ansi_code);
 }
 
-/* RGB颜色化背景 */
+/* RGB colorized background */
+/* RGB着色背景 */
 char* stb_ansi_colorize_bg(const char* text, int r, int g, int b)
 {
     if (!stb_ansi_enabled()) {
@@ -416,7 +500,8 @@ char* stb_ansi_colorize_bg(const char* text, int r, int g, int b)
     return stb_ansi_colorize(text, ansi_code);
 }
 
-/* 预设主题样式 */
+/* Default theme style */
+/* 默认主题样式 */
 const char* stb_ansi_success(const char* text)
 {
     static char buffer[1024];
@@ -477,6 +562,7 @@ const char* stb_ansi_quote(const char* text)
     return buffer;
 }
 
+/* Printf with ANSI support */
 /* 带ANSI支持的printf */
 void stb_ansi_printf(const char* format, ...)
 {
@@ -496,24 +582,28 @@ void stb_ansi_printf(const char* format, ...)
     printf("%s", stb_ansi_buffer);
 }
 
+/* Puts with ANSI support */
 /* 带ANSI支持的puts */
 void stb_ansi_puts(const char* str)
 {
     printf("%s\n", str);
 }
 
+/* Print with ANSI support */
 /* 带ANSI支持的print */
 void stb_ansi_print(const char* str)
 {
     printf("%s", str);
 }
 
+/* Println with ANSI support */
 /* 带ANSI支持的println */
 void stb_ansi_println(const char* str)
 {
     printf("%s\n", str);
 }
 
+/* progress bar */
 /* 进度条 */
 void stb_ansi_progress_bar(int progress, int total, int width)
 {
@@ -524,10 +614,12 @@ void stb_ansi_progress_bar(int progress, int total, int width)
     
     printf("\r[");
     
+    /* Progress bar main body */
     /* 进度条主体 */
     for (int i = 0; i < width; i++) {
         if (i < filled) {
             if (stb_ansi_enabled()) {
+                /* Gradient color */
                 /* 渐变颜色 */
                 int r = (int)(255 * (1.0 - (float)i/width));
                 int g = (int)(255 * (float)i/width);
@@ -550,6 +642,7 @@ void stb_ansi_progress_bar(int progress, int total, int width)
     fflush(stdout);
 }
 
+/* Rotating indicator */
 /* 旋转指示器 */
 void stb_ansi_spinner(const char* label, int frame)
 {
@@ -568,15 +661,17 @@ void stb_ansi_spinner(const char* label, int frame)
     fflush(stdout);
 }
 
+/* State printing */
 /* 状态打印 */
 void stb_ansi_print_status(const char* message, int type)
 {
     /* 0: info, 1: success, 2: warning, 3: error */
+    /* 0: 信息, 1: 成功, 2: 警告, 3: 错误 */
     const char* prefix = "";
     const char* color = "";
     
     switch(type) {
-        case 0: /* info */
+        case 0: /* info - 信息 */
             if (stb_ansi_enabled()) {
                 prefix = "ℹ";
                 color = ANSI_FG_CYAN;
@@ -584,7 +679,7 @@ void stb_ansi_print_status(const char* message, int type)
                 prefix = "[INFO]";
             }
             break;
-        case 1: /* success */
+        case 1: /* success - 成功 */
             if (stb_ansi_enabled()) {
                 prefix = "✓";
                 color = ANSI_FG_GREEN;
@@ -592,7 +687,7 @@ void stb_ansi_print_status(const char* message, int type)
                 prefix = "[OK]";
             }
             break;
-        case 2: /* warning */
+        case 2: /* warning - 警告 */
             if (stb_ansi_enabled()) {
                 prefix = "⚠";
                 color = ANSI_FG_YELLOW;
@@ -600,7 +695,7 @@ void stb_ansi_print_status(const char* message, int type)
                 prefix = "[WARN]";
             }
             break;
-        case 3: /* error */
+        case 3: /* error - 错误 */
             if (stb_ansi_enabled()) {
                 prefix = "✗";
                 color = ANSI_FG_RED;
@@ -617,13 +712,15 @@ void stb_ansi_print_status(const char* message, int type)
     }
 }
 
+/* print a form */
 /* 打印表格 */
 void stb_ansi_print_table(const char** headers, const char*** rows, 
                          int num_headers, int num_rows, int* col_widths)
 {
     if (!headers || !rows || num_headers <= 0) return;
     
-    /* 表头 */
+    /* meter */
+    /* 测量 */
     printf("┌");
     for (int i = 0; i < num_headers; i++) {
         int width = col_widths ? col_widths[i] : 20;
@@ -645,7 +742,8 @@ void stb_ansi_print_table(const char** headers, const char*** rows,
     }
     printf("\n");
     
-    /* 分隔线 */
+    /* Line Between */
+    /* 中间分隔线 */
     printf("├");
     for (int i = 0; i < num_headers; i++) {
         int width = col_widths ? col_widths[i] : 20;
@@ -656,6 +754,7 @@ void stb_ansi_print_table(const char** headers, const char*** rows,
     }
     printf("┤\n");
     
+    /* Data line */
     /* 数据行 */
     for (int r = 0; r < num_rows; r++) {
         printf("│");
@@ -674,6 +773,7 @@ void stb_ansi_print_table(const char** headers, const char*** rows,
     }
     
     /* 底部边框 */
+    /* Bottom border */
     printf("└");
     for (int i = 0; i < num_headers; i++) {
         int width = col_widths ? col_widths[i] : 20;
@@ -686,6 +786,7 @@ void stb_ansi_print_table(const char** headers, const char*** rows,
 }
 
 /* 打印带框文本 */
+/* Print boxed text */
 void stb_ansi_print_boxed(const char* text, const char* style)
 {
     int len = strlen(text);
@@ -706,6 +807,7 @@ void stb_ansi_print_boxed(const char* text, const char* style)
 }
 
 /* 打印分隔线 */
+/* Print separator */
 void stb_ansi_print_separator(int length, char ch, const char* color)
 {
     if (stb_ansi_enabled()) {
@@ -724,6 +826,7 @@ void stb_ansi_print_separator(int length, char ch, const char* color)
 }
 
 /* 状态管理 */
+/* State management */
 void stb_ansi_push_state(void)
 {
     if (stb_ansi_stack_top < STB_ANSI_STACK_SIZE) {
@@ -741,11 +844,11 @@ void stb_ansi_pop_state(void)
 void stb_ansi_clear_cache(void)
 {
     /* 清空缓冲区 */
+    /* Clear buffer */
     memset(stb_ansi_buffer, 0, STB_ANSI_BUFFER_SIZE);
     /* 重置状态栈 */
+    /* Reset state stack */
     stb_ansi_stack_top = 0;
 }
 
 #endif /* STB_ansi */
-
-

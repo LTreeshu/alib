@@ -46,6 +46,7 @@ typedef struct {
 } deque;
 
 // 函数声明
+// Function declaration
 deque* deque_create(void);
 void deque_destroy(deque* dq);
 bool deque_push_front(deque* dq, DEQUE_VALUE_TYPE value);
@@ -60,6 +61,7 @@ void deque_clear(deque* dq);
 bool deque_reserve(deque* dq, size_t new_capacity);
 
 // 迭代器支持
+// Iterator support
 typedef struct {
     const deque* dq;
     size_t current;
@@ -108,11 +110,13 @@ static bool deque_resize(deque* dq, size_t new_capacity) {
     if (!dq->is_empty) {
         if (dq->front < dq->rear) {
             // 连续存储的情况
+            // Continuous storage situation
             for (size_t i = 0; i < dq->size; ++i) {
                 new_data[i] = dq->data[dq->front + i];
             }
         } else {
             // 环绕存储的情况
+            // Circumjacent storage situation
             size_t first_part = dq->capacity - dq->front;
             for (size_t i = 0; i < first_part; ++i) {
                 new_data[i] = dq->data[dq->front + i];
@@ -234,6 +238,7 @@ bool deque_reserve(deque* dq, size_t new_capacity) {
 }
 
 // 迭代器实现
+// Iterator implementation
 deque_iterator deque_begin(const deque* dq) {
     DEQUE_ASSERT(dq);
     deque_iterator it = {dq, dq->front, 0};

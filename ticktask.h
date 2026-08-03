@@ -1,13 +1,15 @@
 /**The configuration item
- * #define TSysTickCnt - the SysTick count
- * #define TSystemCoreClock - Disable automatic detection
- * #define TSysTick_open() - open and start systick
+ * 配置项
+ * #define TSysTickCnt - the SysTick count  // SysTick计数值
+ * #define TSystemCoreClock - Disable automatic detection  // 禁用自动检测（未使用）
+ * #define TSysTick_open() - open and start systick  // 打开并启动systick
  * #define TickTIMx_MAX
  * #define USE_TimerWheel
  * */
 
 /**The Usage
- * configuration item
+ * 使用方法
+ * configuration item  // 配置项
  * ...
  * #define STB_task
  * #include "task.h"
@@ -135,7 +137,7 @@ void TaskAdd (task_t *pt)
 {
     task_t *node = pt;
 
-    /* 避免重复添加 */
+    /* 避免重复添加 */  // Avoid duplicate addition
     if (taskHead.next == node) {
         return;
     }
@@ -204,7 +206,7 @@ void TwtimerAdd(twheel_t tm, uint32_t cycle,  callback_t cb)
     if (node == NULL) return;
 
 
-    /* 避免重复添加 */
+    /* 避免重复添加 */  // Avoid duplicate addition
     if (timerHead.next == node) return;
 
 
@@ -222,15 +224,15 @@ void TwtimerAdd(twheel_t tm, uint32_t cycle,  callback_t cb)
 
 void TwtimerDelete(twtimer_t *twt)
 {
-    /* 重复删除判断 */
+    /* 重复删除判断 */  // Duplicate deletion check
     if (twt->prev == NULL) return;
     twt->prev->next = twt->next;
 
-    /* 尾节点判断 */
+    /* 尾节点判断 */  // Tail node check
     if (twt->next == NULL) return;
     twt->next->prev = twt->prev;
 
-    /* 清理 */
+    /* 清理 */  // Cleanup
     twt->next = NULL;
     twt->prev = NULL;
     *twt = (twtimer_t) {0, 0, 0, 0, 0, 0};
@@ -248,7 +250,7 @@ void TaskTwheelInit(void)
 #ifdef USE_TimerWheel
     static task_t twheel_task = {.proc = twheel_entry};
 
-    // 初始化软定时器内存池
+    // 初始化软定时器内存池  // Initialize soft timer memory pool
     twtmgr.free = 0;
     twtmgr.used = 0;
     for (int i = 0; i < twtmgr.capacity; i++) {
@@ -299,7 +301,7 @@ void twheel_entry(void)
 
             if (ptt->cycle == 1U) {
                 TwtimerDelete(ptt);
-                /* clean */
+                /* clean */  /* 清理 */
                 *ptt = TWTIM_NULL;
             }
             else if ( ptt -> cycle == 0U) {;}
@@ -319,53 +321,52 @@ twheel_t Get_twheelTime(void) { return twheel; }
 
 char* uint2str(uint64_t value, char* buffer)
 {
-    // 边界处理：直接处理 0 的情况
+    // 边界处理：直接处理 0 的情况  // Boundary handling: handle 0 directly
     if (value == 0) {
         buffer[0] = '0';
         buffer[1] = '\0';
         return buffer;
     }
 
-    // 1. 使用 __builtin_clzll 快速确定位数（基于二进制位数映射）
-
+    // 1. 使用 __builtin_clzll 快速确定位数（基于二进制位数映射）  // Use __builtin_clzll to quickly determine digit count (based on binary length mapping)
     int digit_count = (((64 - __builtin_clzll(value)) * 1233) >> 12) + 1;
 
-    // 2. 创建一个临时缓冲区反向写入
+    // 2. 创建一个临时缓冲区反向写入  // Create temporary buffer for reverse writing
     char temp[21];
-    int pos = digit_count; // 从最高位开始填充
-    temp[pos] = '\0';      // 设置字符串终止符
+    int pos = digit_count; // 从最高位开始填充  // Start filling from most significant digit
+    temp[pos] = '\0';      // 设置字符串终止符  // Set string terminator
 
-    // 3. 根据位数选择处理策略
-    // 如果位数较多（>= 4 位），我们使用除以 100 的方式，一次处理两位
-    // 这样可以将循环次数减少一半（例如 12 位数字只需要 6 次循环）
+    // 3. 根据位数选择处理策略  // Choose processing strategy based on digit count
+    // 如果位数较多（>= 4 位），我们使用除以 100 的方式，一次处理两位  // If digits >= 4, use divide by 100 to process two digits at a time
+    // 这样可以将循环次数减少一半（例如 12 位数字只需要 6 次循环）  // This halves loop count (e.g., 12 digits -> 6 iterations)
     while (digit_count >= 4) {
-        // 取模 100，得到当前最低的两位数字
+        // 取模 100，得到当前最低的两位数字  // Mod 100 to get lowest two digits
         uint64_t two_digits = value % 100;
-        // 整除 100，去掉最低的两位
+        // 整除 100，去掉最低的两位  // Divide by 100 to remove lowest two digits
         value /= 100;
 
-        // 处理两位数字
-        // 由于不使用查表，需要分别处理个位和十位
-        uint8_t low = two_digits % 10;  // 个位
-        uint8_t high = two_digits / 10; // 十位
+        // 处理两位数字  // Process two digits
+        // 由于不使用查表，需要分别处理个位和十位  // Without lookup table, handle units and tens separately
+        uint8_t low = two_digits % 10;  // 个位  // units
+        uint8_t high = two_digits / 10; // 十位  // tens
 
-        // 逆序写入字符
-        temp[--pos] = (char)(low + 0x30);  // 个位字符
-        temp[--pos] = (char)(high + 0x30); // 十位字符
+        // 逆序写入字符  // Write characters in reverse order
+        temp[--pos] = (char)(low + 0x30);  // 个位字符  // units char
+        temp[--pos] = (char)(high + 0x30); // 十位字符  // tens char
 
-        digit_count -= 2; // 处理了两位
+        digit_count -= 2; // 处理了两位  // processed two digits
     }
 
-    // 处理剩余的 1~3 位数字
+    // 处理剩余的 1~3 位数字  // Process remaining 1~3 digits
     while (digit_count > 0) {
-        // 对于最后几位，直接使用加 0x30 的方式（效率最高）
+        // 对于最后几位，直接使用加 0x30 的方式（效率最高）  // For last digits, use +0x30 (most efficient)
         uint64_t digit = value % 10;
         value /= 10;
         temp[--pos] = (char)(digit + 0x30);
         digit_count--;
     }
 
-    // 4. 将结果拷贝到输出缓冲区
+    // 4. 将结果拷贝到输出缓冲区  // Copy result to output buffer
     char *dst = buffer;
     char *src = temp;
     while (*src) {
@@ -401,9 +402,9 @@ const char* Get_twheelTimeStr(void)
 /*********************************************************************
  * @fn      TDelay_Us
  *
- * @brief   Microsecond Delay Time.
+ * @brief   Microsecond Delay Time.  // 微秒延时
  *
- * @param   n - Microsecond number.
+ * @param   n - Microsecond number.  // 微秒数
  *
  * @return  None
  */
@@ -428,9 +429,9 @@ void TDelay_Us(uint32_t n)
 /*********************************************************************
  * @fn      TDelay_Ms
  *
- * @brief   Millisecond Delay Time.
+ * @brief   Millisecond Delay Time.  // 毫秒延时
  *
- * @param   n - Millisecond number.
+ * @param   n - Millisecond number.  // 毫秒数
  *
  * @return  None
  */

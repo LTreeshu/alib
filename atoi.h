@@ -21,10 +21,12 @@ int alibatoi(const char *s)
     int result = 0;
     bool negative = false;
 
+    // 跳过前导空白(可选，提高健壮性)
     // Skip leading white space (optional, improve robustness)
     while (*s == ' ' || *s == '\t' || *s == '\n') s++;
 
     // 处理符号
+    // Handle positive and negative symbols
     if (*s == '-') {
         negative = true;
         s++;
@@ -32,6 +34,7 @@ int alibatoi(const char *s)
         s++;
     }
 
+    // 核心转换:result = result * 10+读取的每个数字的位数。
     // Core transformation: result = result * 10+digit for each number read.
     while (*s >= '0' && *s <= '9') {
         int digit = *s - '0';

@@ -1,4 +1,5 @@
 /**The configuration item
+ * 配置项
  * #define STB_fixed_8_16_32_TEST
  * #define STB_fixed_8_16_32_TEST_MAIN
  * #define ENABLE_Q8_8     1
@@ -7,6 +8,7 @@
  * */
 
 /**The Usage
+ * 使用方法
  * #include "fixed_8_16_32.h"
  * */
 #ifndef _FIXED_8_16_32_H
@@ -19,67 +21,67 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-// ==================== 配置选项 ====================
-// 用户可配置的选项
+// ==================== 配置选项 ====================  // ==================== Configuration Options ====================
+// 用户可配置的选项  // User-configurable options
 #define ENABLE_Q8_8     1
 #define ENABLE_Q16_16   1
 #define ENABLE_Q32_32   1
 
-// ==================== 定点数类型定义 ====================
+// ==================== 定点数类型定义 ====================  // ==================== Fixed-point Type Definitions ====================
 typedef int16_t q8_8_t;     // Q8.8
 typedef int32_t q16_16_t;   // Q16.16
 typedef int64_t q32_32_t;   // Q32.32
 
-// ==================== 通用宏定义 ====================
-// 浮点数转定点数（四舍五入）
+// ==================== 通用宏定义 ====================  // ==================== General Macro Definitions ====================
+// 浮点数转定点数（四舍五入）  // Float to fixed-point (rounding)
 #define FLOAT_TO_Q(f, frac_bits, type) \
     ((type)((f) * (1ULL << (frac_bits)) + ((f) >= 0 ? 0.5f : -0.5f)))
 
-// 浮点数转定点数（截断）
+// 浮点数转定点数（截断）  // Float to fixed-point (truncation)
 #define FLOAT_TO_Q_TRUNC(f, frac_bits, type) \
     ((type)((f) * (1ULL << (frac_bits))))
 
-// 定点数转浮点数
+// 定点数转浮点数  // Fixed-point to float
 #define Q_TO_FLOAT(q, frac_bits) \
     ((float)(q) / (float)(1ULL << (frac_bits)))
 
-// 整数转定点数
+// 整数转定点数  // Integer to fixed-point
 #define INT_TO_Q(i, frac_bits, type) \
     ((type)(i) << (frac_bits))
 
-// 定点数取整数部分
+// 定点数取整数部分  // Extract integer part from fixed-point
 #define Q_TO_INT(q, frac_bits) \
     ((q) >> (frac_bits))
 
-// 定点数取小数部分
+// 定点数取小数部分  // Extract fractional part from fixed-point
 #define Q_FRAC_PART(q, frac_bits) \
     ((q) & ((1ULL << (frac_bits)) - 1))
 
-// 定点数四舍五入到整数
+// 定点数四舍五入到整数  // Round fixed-point to integer
 #define Q_ROUND_TO_INT(q, frac_bits) \
     (((q) + (1 << ((frac_bits) - 1))) >> (frac_bits))
 
-// 定点数乘法（四舍五入）
+// 定点数乘法（四舍五入）  // Fixed-point multiplication (rounding)
 #define Q_MUL(a, b, frac_bits, temp_type, result_type) \
     ((result_type)(((temp_type)(a) * (b) + (1LL << ((frac_bits) - 1))) >> (frac_bits)))
 
-// 定点数除法（四舍五入）
+// 定点数除法（四舍五入）  // Fixed-point division (rounding)
 #define Q_DIV(a, b, frac_bits, temp_type, result_type) \
     ((result_type)(((temp_type)(a) << (frac_bits)) / (b)))
 
-// 定点数平方根（整数迭代法）
+// 定点数平方根（整数迭代法）  // Fixed-point square root (integer iteration)
 #define Q_SQRT(q, frac_bits, type) \
     q_sqrt_impl(q, frac_bits, (type)0)
 
-// 定点数格式转换
+// 定点数格式转换  // Fixed-point format conversion
 #define Q_CONVERT(q, from_frac, to_frac, from_type, to_type) \
     ((from_frac) >= (to_frac) ? \
      ((to_type)((q) + (1LL << ((from_frac) - (to_frac) - 1))) >> ((from_frac) - (to_frac))) : \
      ((to_type)(q) << ((to_frac) - (from_frac))))
 
-// ==================== Q8.8 定点数 ====================
+// ==================== Q8.8 定点数 ====================  // ==================== Q8.8 Fixed-point ====================
 #if ENABLE_Q8_8
-    // Q8.8 常量
+    // Q8.8 常量  // Q8.8 constants
     #define Q8_8_FRAC_BITS    8
     #define Q8_8_INT_BITS     7
     #define Q8_8_TOTAL_BITS   16
@@ -90,11 +92,11 @@ typedef int64_t q32_32_t;   // Q32.32
     #define Q8_8_MIN_FLOAT    ((float)Q8_8_MIN / Q8_8_SCALE)  // -128.0
     #define Q8_8_PRECISION    (1.0f / Q8_8_SCALE)         // 0.00390625
     
-    // Q8.8 掩码
+    // Q8.8 掩码  // Q8.8 masks
     #define Q8_8_INT_MASK     0xFF00
     #define Q8_8_FRAC_MASK    0x00FF
     
-    // Q8.8 转换函数
+    // Q8.8 转换函数  // Q8.8 conversion functions
     static inline q8_8_t q8_8_from_float(float f) {
         return FLOAT_TO_Q(f, Q8_8_FRAC_BITS, q8_8_t);
     }
@@ -123,7 +125,7 @@ typedef int64_t q32_32_t;   // Q32.32
         return Q_ROUND_TO_INT(q, Q8_8_FRAC_BITS);
     }
     
-    // Q8.8 算术运算
+    // Q8.8 算术运算  // Q8.8 arithmetic operations
     static inline q8_8_t q8_8_add(q8_8_t a, q8_8_t b) { return a + b; }
     static inline q8_8_t q8_8_sub(q8_8_t a, q8_8_t b) { return a - b; }
     static inline q8_8_t q8_8_neg(q8_8_t a) { return -a; }
@@ -136,13 +138,13 @@ typedef int64_t q32_32_t;   // Q32.32
         return Q_DIV(a, b, Q8_8_FRAC_BITS, int32_t, q8_8_t);
     }
     
-    // Q8.8 平方根（整数迭代法）
+    // Q8.8 平方根（整数迭代法）  // Q8.8 square root (integer iteration)
     static inline q8_8_t q8_8_sqrt(q8_8_t q) {
         if (q <= 0) return 0;
         
-        uint32_t x = q << Q8_8_FRAC_BITS;  // 转换为 Q16.16 格式进行计算
+        uint32_t x = q << Q8_8_FRAC_BITS;  // 转换为 Q16.16 格式进行计算  // Convert to Q16.16 for calculation
         uint32_t res = 0;
-        uint32_t bit = 1U << 30;  // 从最高位开始
+        uint32_t bit = 1U << 30;  // 从最高位开始  // Start from highest bit
         
         while (bit > x) {
             bit >>= 2;
@@ -161,12 +163,12 @@ typedef int64_t q32_32_t;   // Q32.32
         return (q8_8_t)(res >> (Q8_8_FRAC_BITS / 2));
     }
     
-    // Q8.8 绝对值
+    // Q8.8 绝对值  // Q8.8 absolute value
     static inline q8_8_t q8_8_abs(q8_8_t q) {
         return q < 0 ? -q : q;
     }
     
-    // Q8.8 比较
+    // Q8.8 比较  // Q8.8 comparisons
     static inline bool q8_8_eq(q8_8_t a, q8_8_t b) { return a == b; }
     static inline bool q8_8_lt(q8_8_t a, q8_8_t b) { return a < b; }
     static inline bool q8_8_gt(q8_8_t a, q8_8_t b) { return a > b; }
@@ -174,9 +176,9 @@ typedef int64_t q32_32_t;   // Q32.32
     static inline bool q8_8_ge(q8_8_t a, q8_8_t b) { return a >= b; }
 #endif
 
-// ==================== Q16.16 定点数 ====================
+// ==================== Q16.16 定点数 ====================  // ==================== Q16.16 Fixed-point ====================
 #if ENABLE_Q16_16
-    // Q16.16 常量
+    // Q16.16 常量  // Q16.16 constants
     #define Q16_16_FRAC_BITS    16
     #define Q16_16_INT_BITS     15
     #define Q16_16_TOTAL_BITS   32
@@ -187,11 +189,11 @@ typedef int64_t q32_32_t;   // Q32.32
     #define Q16_16_MIN_FLOAT    ((float)Q16_16_MIN / Q16_16_SCALE)  // -32768.0
     #define Q16_16_PRECISION    (1.0f / Q16_16_SCALE)         // 0.000015258789
     
-    // Q16.16 掩码
+    // Q16.16 掩码  // Q16.16 masks
     #define Q16_16_INT_MASK     0xFFFF0000
     #define Q16_16_FRAC_MASK    0x0000FFFF
     
-    // Q16.16 转换函数
+    // Q16.16 转换函数  // Q16.16 conversion functions
     static inline q16_16_t q16_16_from_float(float f) {
         return FLOAT_TO_Q(f, Q16_16_FRAC_BITS, q16_16_t);
     }
@@ -220,7 +222,7 @@ typedef int64_t q32_32_t;   // Q32.32
         return Q_ROUND_TO_INT(q, Q16_16_FRAC_BITS);
     }
     
-    // Q16.16 算术运算
+    // Q16.16 算术运算  // Q16.16 arithmetic operations
     static inline q16_16_t q16_16_add(q16_16_t a, q16_16_t b) { return a + b; }
     static inline q16_16_t q16_16_sub(q16_16_t a, q16_16_t b) { return a - b; }
     static inline q16_16_t q16_16_neg(q16_16_t a) { return -a; }
@@ -233,13 +235,13 @@ typedef int64_t q32_32_t;   // Q32.32
         return Q_DIV(a, b, Q16_16_FRAC_BITS, int64_t, q16_16_t);
     }
     
-    // Q16.16 平方根（整数迭代法）
+    // Q16.16 平方根（整数迭代法）  // Q16.16 square root (integer iteration)
     static inline q16_16_t q16_16_sqrt(q16_16_t q) {
         if (q <= 0) return 0;
         
-        uint64_t x = (uint64_t)q << Q16_16_FRAC_BITS;  // 转换为 Q32.32 格式进行计算
+        uint64_t x = (uint64_t)q << Q16_16_FRAC_BITS;  // 转换为 Q32.32 格式进行计算  // Convert to Q32.32 for calculation
         uint64_t res = 0;
-        uint64_t bit = 1ULL << 62;  // 从最高位开始
+        uint64_t bit = 1ULL << 62;  // 从最高位开始  // Start from highest bit
         
         while (bit > x) {
             bit >>= 2;
@@ -258,12 +260,12 @@ typedef int64_t q32_32_t;   // Q32.32
         return (q16_16_t)(res >> (Q16_16_FRAC_BITS / 2));
     }
     
-    // Q16.16 绝对值
+    // Q16.16 绝对值  // Q16.16 absolute value
     static inline q16_16_t q16_16_abs(q16_16_t q) {
         return q < 0 ? -q : q;
     }
     
-    // Q16.16 比较
+    // Q16.16 比较  // Q16.16 comparisons
     static inline bool q16_16_eq(q16_16_t a, q16_16_t b) { return a == b; }
     static inline bool q16_16_lt(q16_16_t a, q16_16_t b) { return a < b; }
     static inline bool q16_16_gt(q16_16_t a, q16_16_t b) { return a > b; }
@@ -271,9 +273,9 @@ typedef int64_t q32_32_t;   // Q32.32
     static inline bool q16_16_ge(q16_16_t a, q16_16_t b) { return a >= b; }
 #endif
 
-// ==================== Q32.32 定点数 ====================
+// ==================== Q32.32 定点数 ====================  // ==================== Q32.32 Fixed-point ====================
 #if ENABLE_Q32_32
-    // Q32.32 常量
+    // Q32.32 常量  // Q32.32 constants
     #define Q32_32_FRAC_BITS    32
     #define Q32_32_INT_BITS     31
     #define Q32_32_TOTAL_BITS   64
@@ -284,11 +286,11 @@ typedef int64_t q32_32_t;   // Q32.32
     #define Q32_32_MIN_FLOAT    ((float)Q32_32_MIN / Q32_32_SCALE)  // -2147483648.0
     #define Q32_32_PRECISION    (1.0f / Q32_32_SCALE)         // 2.3283064e-10
     
-    // Q32.32 掩码
+    // Q32.32 掩码  // Q32.32 masks
     #define Q32_32_INT_MASK     0xFFFFFFFF00000000ULL
     #define Q32_32_FRAC_MASK    0x00000000FFFFFFFFULL
     
-    // Q32.32 转换函数
+    // Q32.32 转换函数  // Q32.32 conversion functions
     static inline q32_32_t q32_32_from_float(float f) {
         return FLOAT_TO_Q(f, Q32_32_FRAC_BITS, q32_32_t);
     }
@@ -325,30 +327,30 @@ typedef int64_t q32_32_t;   // Q32.32
         return Q_ROUND_TO_INT(q, Q32_32_FRAC_BITS);
     }
     
-    // Q32.32 算术运算
+    // Q32.32 算术运算  // Q32.32 arithmetic operations
     static inline q32_32_t q32_32_add(q32_32_t a, q32_32_t b) { return a + b; }
     static inline q32_32_t q32_32_sub(q32_32_t a, q32_32_t b) { return a - b; }
     static inline q32_32_t q32_32_neg(q32_32_t a) { return -a; }
     
-    // Q32.32 乘法（使用128位中间结果）
+    // Q32.32 乘法（使用128位中间结果）  // Q32.32 multiplication (using 128-bit intermediate)
     static inline q32_32_t q32_32_mul(q32_32_t a, q32_32_t b) {
         __int128 temp = (__int128)a * b;
         return (q32_32_t)((temp + (1LL << (Q32_32_FRAC_BITS - 1))) >> Q32_32_FRAC_BITS);
     }
     
-    // Q32.32 除法（使用128位中间结果）
+    // Q32.32 除法（使用128位中间结果）  // Q32.32 division (using 128-bit intermediate)
     static inline q32_32_t q32_32_div(q32_32_t a, q32_32_t b) {
         __int128 temp = (__int128)a << Q32_32_FRAC_BITS;
         return (q32_32_t)(temp / b);
     }
     
-    // Q32.32 平方根（整数迭代法）
+    // Q32.32 平方根（整数迭代法）  // Q32.32 square root (integer iteration)
     static inline q32_32_t q32_32_sqrt(q32_32_t q) {
         if (q <= 0) return 0;
         
         unsigned __int128 x = (unsigned __int128)q << Q32_32_FRAC_BITS;
         unsigned __int128 res = 0;
-        unsigned __int128 bit = (unsigned __int128)1 << 126;  // 从最高位开始
+        unsigned __int128 bit = (unsigned __int128)1 << 126;  // 从最高位开始  // Start from highest bit
         
         while (bit > x) {
             bit >>= 2;
@@ -367,12 +369,12 @@ typedef int64_t q32_32_t;   // Q32.32
         return (q32_32_t)(res >> (Q32_32_FRAC_BITS / 2));
     }
     
-    // Q32.32 绝对值
+    // Q32.32 绝对值  // Q32.32 absolute value
     static inline q32_32_t q32_32_abs(q32_32_t q) {
         return q < 0 ? -q : q;
     }
     
-    // Q32.32 比较
+    // Q32.32 比较  // Q32.32 comparisons
     static inline bool q32_32_eq(q32_32_t a, q32_32_t b) { return a == b; }
     static inline bool q32_32_lt(q32_32_t a, q32_32_t b) { return a < b; }
     static inline bool q32_32_gt(q32_32_t a, q32_32_t b) { return a > b; }
@@ -380,35 +382,35 @@ typedef int64_t q32_32_t;   // Q32.32
     static inline bool q32_32_ge(q32_32_t a, q32_32_t b) { return a >= b; }
 #endif
 
-// ==================== 格式转换函数 ====================
-// Q8.8 转 Q16.16
+// ==================== 格式转换函数 ====================  // ==================== Format Conversion Functions ====================
+// Q8.8 转 Q16.16  // Q8.8 to Q16.16
 static inline q16_16_t q8_8_to_q16_16(q8_8_t q) {
     return (q16_16_t)q << (Q16_16_FRAC_BITS - Q8_8_FRAC_BITS);
 }
 
-// Q8.8 转 Q32.32
+// Q8.8 转 Q32.32  // Q8.8 to Q32.32
 static inline q32_32_t q8_8_to_q32_32(q8_8_t q) {
     return (q32_32_t)q << (Q32_32_FRAC_BITS - Q8_8_FRAC_BITS);
 }
 
-// Q16.16 转 Q8.8（四舍五入）
+// Q16.16 转 Q8.8（四舍五入）  // Q16.16 to Q8.8 (rounding)
 static inline q8_8_t q16_16_to_q8_8(q16_16_t q) {
     return (q8_8_t)((q + (1 << (Q16_16_FRAC_BITS - Q8_8_FRAC_BITS - 1))) >> 
                     (Q16_16_FRAC_BITS - Q8_8_FRAC_BITS));
 }
 
-// Q16.16 转 Q32.32
+// Q16.16 转 Q32.32  // Q16.16 to Q32.32
 static inline q32_32_t q16_16_to_q32_32(q16_16_t q) {
     return (q32_32_t)q << (Q32_32_FRAC_BITS - Q16_16_FRAC_BITS);
 }
 
-// Q32.32 转 Q8.8（四舍五入）
+// Q32.32 转 Q8.8（四舍五入）  // Q32.32 to Q8.8 (rounding)
 static inline q8_8_t q32_32_to_q8_8(q32_32_t q) {
     return (q8_8_t)((q + (1LL << (Q32_32_FRAC_BITS - Q8_8_FRAC_BITS - 1))) >> 
                     (Q32_32_FRAC_BITS - Q8_8_FRAC_BITS));
 }
 
-// Q32.32 转 Q16.16（四舍五入）
+// Q32.32 转 Q16.16（四舍五入）  // Q32.32 to Q16.16 (rounding)
 static inline q16_16_t q32_32_to_q16_16(q32_32_t q) {
     return (q16_16_t)((q + (1LL << (Q32_32_FRAC_BITS - Q16_16_FRAC_BITS - 1))) >> 
                       (Q32_32_FRAC_BITS - Q16_16_FRAC_BITS));
@@ -418,7 +420,7 @@ static inline q16_16_t q32_32_to_q16_16(q32_32_t q) {
 
 
 #ifdef STB_fixed_8_16_32_TEST
-// ==================== 测试函数 ====================
+// ==================== 测试函数 ====================  // ==================== Test Functions ====================
 void print_config_info() {
     printf("定点数配置信息\n");
     printf("==============\n");
@@ -480,7 +482,7 @@ void test_q8_8_basic() {
         printf("  截断:     0x%04X = %9.5f (误差: %9.5f)\n", 
                (uint16_t)q_trunc, back_trunc, fabsf(test_values[i] - back_trunc));
         
-        // 测试整数和小数部分
+        // 测试整数和小数部分  // Test integer and fractional parts
         int16_t int_part = q8_8_to_int(q_round);
         q8_8_t frac_part = q8_8_frac_part(q_round);
         printf("  整数部分: %d, 小数部分: 0x%02X = %9.5f\n", 
@@ -509,7 +511,7 @@ void test_q16_16_basic() {
         printf("  截断:     0x%08X = %13.8f (误差: %13.8f)\n", 
                (uint32_t)q_trunc, back_trunc, fabsf(test_values[i] - back_trunc));
         
-        // 测试整数和小数部分
+        // 测试整数和小数部分  // Test integer and fractional parts
         int32_t int_part = q16_16_to_int(q_round);
         q16_16_t frac_part = q16_16_frac_part(q_round);
         printf("  整数部分: %d, 小数部分: 0x%04X = %13.8f\n", 
@@ -536,7 +538,7 @@ void test_q32_32_basic() {
                (unsigned long long)q_round, back_round);
         printf("  误差: %20.15f\n", fabs(test_values[i] - back_round));
         
-        // 测试整数和小数部分
+        // 测试整数和小数部分  // Test integer and fractional parts
         int64_t int_part = q32_32_to_int(q_round);
         q32_32_t frac_part = q32_32_frac_part(q_round);
         printf("  整数部分: %lld, 小数部分: 0x%08llX\n", 
@@ -604,7 +606,7 @@ void test_conversion_operations() {
     
     printf("测试值: %f\n\n", test_value);
     
-    // 转换到不同格式
+    // 转换到不同格式  // Convert to different formats
     q8_8_t q8 = q8_8_from_float(test_value);
     q16_16_t q16_from_q8 = q8_8_to_q16_16(q8);
     q32_32_t q32_from_q8 = q8_8_to_q32_32(q8);
@@ -728,10 +730,10 @@ int main() {
     printf("定点数系统测试 (Q8.8, Q16.16, Q32.32)\n");
     printf("===================================\n\n");
     
-    // 打印配置信息
+    // 打印配置信息  // Print configuration info
     print_config_info();
     
-    // 运行测试
+    // 运行测试  // Run tests
     test_q8_8_basic();
     test_q16_16_basic();
     test_q32_32_basic();
